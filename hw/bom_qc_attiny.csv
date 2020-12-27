@@ -1,0 +1,17 @@
+"Id";"Designator";"Package";"Quantity";"Designation";"Supplier and ref";
+1;"TP2,TP1";"TestPoint_Pad_3.0x3.0mm";2;"TestPoint";;;
+2;"R6,R10,R9,R8,R7,R5";"R_1206_3216Metric_Pad1.30x1.75mm_HandSolder";6;"10k";;;
+3;"R12";"R_0603_1608Metric_Pad0.98x0.95mm_HandSolder";1;"R";;;
+4;"J2";"PinHeader_2x03_P2.54mm_Vertical";1;"AVR-ISP-6";;;
+5;"SW4";"Push_Button_6x6mm";1;"SW_Inc";;;
+6;"SW3";"Push_Button_6x6mm";1;"SW_Dec";;;
+7;"SW2";"Push_Button_6x6mm";1;"SW_RST";;;
+8;"U2";"SOT-23-5";1;"MIC5205-3.3YM5";;;
+9;"U1";"SOIC-14_3.9x8.7mm_P1.27mm";1;"ATtiny84A-PU";;;
+10;"SW1";"SW_DIP_SPSTx03_Slide_9.78x9.8mm_W7.62mm_P2.54mm";1;"SW_SEL";;;
+11;"R4,R2";"R_1206_3216Metric_Pad1.30x1.75mm_HandSolder";2;"1k";;;
+12;"R3,R1";"R_1206_3216Metric_Pad1.30x1.75mm_HandSolder";2;"4k7";;;
+13;"J1";"USB_A_Molex_67643_Horizontal";1;"USB_A";;;
+14;"C3";"C_1206_3216Metric_Pad1.33x1.80mm_HandSolder";1;"470p";;;
+15;"C2";"C_1206_3216Metric_Pad1.33x1.80mm_HandSolder";1;"2.2u";;;
+16;"C1";"C_1206_3216Metric_Pad1.33x1.80mm_HandSolder";1;"100n";;;
