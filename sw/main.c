@@ -1,42 +1,81 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-#define Dm_HIGH (1 << PORTA0) // Data+ high
-#define Dm_LOW (1 << PORTA1)  // Data- low
-#define Dp_HIGH (1 << PORTA2) // Data+ high
-#define Dp_LOW (1 << PORTA3)  // Data+ low
-#define SW2 (1 << PORTA4)     // Dip switch position 1
-#define SW1 (1 << PORTA5)     // Dip switch position 2
+#define Dp_HIGH (1 << PORTA0) // Data+ high
+#define Dp_LOW (1 << PORTA1)  // Data+ low
+#define Dm_LOW (1 << PORTA2)  // Data- low
+#define Dm_HIGH (1 << PORTA3) // Data- high
+
+#define SW3 (1 << PORTA6) // Dip switch position 3
+#define SW2 (1 << PORTA5) // Dip switch position 2
+#define SW1 (1 << PORTA4) // Dip switch position 1
+#define SW_DEC (1 << PORTB1)
+#define SW_INC (1 << PORTB0)
+
+#define READ_SW_INC ((PINB & SW_INC) >> PORTB0)
+#define READ_SW_DEC ((PINB & SW_DEC) >> PORTB1)
 
 typedef enum QC_VOLTAGE
 {
-    QC_5V = 0x3,
-    QC_9V = 0x2,
-    QC_12V = 0x1,
-    QC_20V = 0x00
-} QC_VOLTAGE;
+    QC_5V = 0x07,
+    QC_9V = 0x03,
+    QC_12V = 0x05,
+    QC_20V = 0x01,
+    QC_CONT = 0x06
+} qc_voltage_t;
 
 void qc_init();
-QC_VOLTAGE read_switch();
-void qc_set_voltage(QC_VOLTAGE voltage);
+qc_voltage_t read_switch();
+void qc_set_voltage(qc_voltage_t voltage);
 
 int main(void)
 {
-    // PA4..5 input, PA0..3 output
-    DDRA |= 0x0F;
+
+    DDRA = 0x0F;
     PORTA = 0x00;
+    DDRB = 0x00;
+    PORTB = 0x00;
 
     qc_init();
-    QC_VOLTAGE volt = read_switch();
+    qc_voltage_t volt = read_switch();
     qc_set_voltage(volt);
+    qc_voltage_t volt_new;
+
     while (1)
     {
-        _delay_ms(200);
-        QC_VOLTAGE volt_new = read_switch();
+        _delay_ms(50);
+        volt_new = read_switch();
         if (volt_new != volt)
         {
+            if (volt == QC_CONT)
+            {
+                qc_set_voltage(QC_5V);
+                _delay_ms(50);
+            }
             qc_set_voltage(volt_new);
             volt = volt_new;
+        }
+        if (volt == QC_CONT)
+        {
+            // Read increment switch
+            if (READ_SW_INC == 0)
+            {
+                while (READ_SW_INC == 0)
+                    _delay_ms(5);
+                qc_set_voltage(QC_20V);
+                _delay_ms(50);
+                qc_set_voltage(QC_CONT);
+                _delay_ms(50);
+            }
+            if (READ_SW_DEC == 0)
+            {
+                while (READ_SW_DEC == 0)
+                    _delay_ms(5);
+                qc_set_voltage(QC_12V);
+                _delay_ms(50);
+                qc_set_voltage(QC_CONT);
+                _delay_ms(50);
+            }
         }
     }
     return 0;
@@ -55,13 +94,13 @@ void qc_init()
     _delay_ms(50); // Wait for D- to fully discharge
 }
 
-QC_VOLTAGE read_switch()
+qc_voltage_t read_switch()
 {
     // Read bits 4 and 5 of input, bitshift them right so they are first two bits of return value
-    return (QC_VOLTAGE)((PINA & (SW1 | SW2)) >> PORTA4);
+    return (qc_voltage_t)((PINA & (SW1 | SW2 | SW3)) >> 4);
 };
 
-void qc_set_voltage(QC_VOLTAGE voltage)
+void qc_set_voltage(qc_voltage_t voltage)
 {
     switch (voltage)
     {
@@ -84,7 +123,16 @@ void qc_set_voltage(QC_VOLTAGE voltage)
         // D+ = 3,3V; D- = 3,3V
         PORTA |= (Dp_HIGH | Dp_LOW | Dm_HIGH | Dm_LOW);
         break;
+    case QC_CONT:
+        // D+ = 0,6V; D- = 3,3V
+        PORTA |= (Dp_HIGH | Dm_LOW | Dm_HIGH);
+        PORTA &= ~Dp_LOW;
+        break;
     default:
+        // D+ = 0,6V; D- = 0V
+        PORTA |= Dp_HIGH;
+        PORTA &= ~(Dp_LOW | Dm_HIGH | Dm_LOW);
+        break;
         break;
     }
 }

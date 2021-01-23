@@ -10,6 +10,9 @@ program: main.hex
 read_fuses:
 	avrdude -p t84 -c stk500v1 -b 19200 -P /dev/ttyUSB0
 	
+write_lfuse:
+	avrdude -p t84 -c stk500v1 -b 19200 -U lfuse:w:0x62:m -P /dev/ttyUSB0
+	
 all: compile hex program
 
 clean:
