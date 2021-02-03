@@ -27,14 +27,15 @@ typedef enum QC_VOLTAGE
 void qc_init();
 qc_voltage_t read_switch();
 void qc_set_voltage(qc_voltage_t voltage);
+void qc_increment(void);
+void qc_decrement(void);
 
 int main(void)
 {
 
     DDRA = 0x0F;
     PORTA = 0x00;
-    DDRB = 0x00;
-    PORTB = 0x00;
+    DDRB &= ~(0x03);
 
     qc_init();
     qc_voltage_t volt = read_switch();
@@ -60,21 +61,33 @@ int main(void)
             // Read increment switch
             if (READ_SW_INC == 0)
             {
+                qc_increment();
+                uint8_t cnt = 0;
                 while (READ_SW_INC == 0)
+                {
                     _delay_ms(5);
-                qc_set_voltage(QC_20V);
-                _delay_ms(50);
-                qc_set_voltage(QC_CONT);
-                _delay_ms(50);
+                    cnt++;
+                    if (cnt > 50)
+                    {
+                        qc_increment();
+                        cnt = 0;
+                    }
+                }
             }
             if (READ_SW_DEC == 0)
             {
-                while (READ_SW_DEC == 0)
+                qc_decrement();
+                uint8_t cnt = 0;
+                while (READ_SW_INC == 0)
+                {
                     _delay_ms(5);
-                qc_set_voltage(QC_12V);
-                _delay_ms(50);
-                qc_set_voltage(QC_CONT);
-                _delay_ms(50);
+                    cnt++;
+                    if (cnt > 50)
+                    {
+                        qc_decrement();
+                        cnt = 0;
+                    }
+                }
             }
         }
     }
@@ -100,6 +113,21 @@ qc_voltage_t read_switch()
     return (qc_voltage_t)((PINA & (SW1 | SW2 | SW3)) >> 4);
 };
 
+void qc_increment()
+{
+    qc_set_voltage(QC_20V);
+    _delay_ms(50);
+    qc_set_voltage(QC_CONT);
+    _delay_ms(50);
+}
+
+void qc_decrement()
+{
+    qc_set_voltage(QC_12V);
+    _delay_ms(50);
+    qc_set_voltage(QC_CONT);
+    _delay_ms(50);
+}
 void qc_set_voltage(qc_voltage_t voltage)
 {
     switch (voltage)
