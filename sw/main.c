@@ -6,14 +6,14 @@
 #define Dm_LOW (1 << PORTA2)  // Data- low
 #define Dm_HIGH (1 << PORTA3) // Data- high
 
-#define SW3 (1 << PORTA6) // Dip switch position 3
-#define SW2 (1 << PORTA5) // Dip switch position 2
-#define SW1 (1 << PORTA4) // Dip switch position 1
-#define SW_DEC (1 << PORTB1)
-#define SW_INC (1 << PORTB0)
+#define SW3 (1 << PORTA6)    // Dip switch position 3
+#define SW2 (1 << PORTA5)    // Dip switch position 2
+#define SW1 (1 << PORTA4)    // Dip switch position 1
+#define SW_DEC (1 << PORTB1) // Decrement button
+#define SW_INC (1 << PORTB0) // Increment button
 
-#define READ_SW_INC ((PINB & SW_INC) >> PORTB0)
-#define READ_SW_DEC ((PINB & SW_DEC) >> PORTB1)
+#define READ_SW_INC ((PINB & SW_INC) >> PORTB0) // Macro to read button value
+#define READ_SW_DEC ((PINB & SW_DEC) >> PORTB1) // -||-
 
 typedef enum QC_VOLTAGE
 {
@@ -33,9 +33,10 @@ void qc_decrement(void);
 int main(void)
 {
 
-    DDRA = 0x0F;
-    PORTA = 0x00;
-    DDRB &= ~(0x03);
+    MCUCR |= (1 << PUD);   // Disable all pullups
+    DDRA |= 0b00001111;    // PORTA0..3 are outputs
+    DDRA &= ~(0b01110000); // PORTA4..6 are inputs
+    DDRB &= ~(0b00000011); // PORTB0..1 inputs
 
     qc_init();
     qc_voltage_t volt = read_switch();
